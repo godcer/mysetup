@@ -2,7 +2,7 @@
 
 My personal terminal environment managed by [chezmoi](https://www.chezmoi.io/).
 
-The repository keeps the terminal configuration itself and lets chezmoi handle the machine setup around it. The current terminal configuration is based on the latest configuration from `ank_config`; Nix/Flake files are intentionally excluded.
+The repository keeps the terminal configuration and the small amount of bootstrap logic needed to reproduce it on a fresh Linux system.
 
 ## Fresh machine
 
@@ -12,28 +12,42 @@ Install and apply everything with one command:
 sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply https://github.com/godcer/mysetup
 ```
 
-During initialization, chezmoi asks for the local Git identity:
-
-```text
-Git name (optional):
-Git email (optional):
-```
-
-Both can be left empty. The values are stored in the local chezmoi configuration and are never committed to this repository.
+During initialization, chezmoi asks for the local Git identity. Both values are optional and remain local to the machine.
 
 The setup automatically:
 
 - detects Fedora, Arch, Debian, Ubuntu, and common derivatives;
 - installs the terminal tools used by the configuration;
-- installs required base utilities such as `awk` for tmux/CLI tooling;
-- installs optional configured tools such as Helix when available;
-- uses the native package manager first and upstream installers/releases when a package is unavailable;
-- normalizes Debian's `fd`/`fdfind` and `bat`/`batcat` names;
+- installs required base utilities such as `awk`;
 - installs Zsh and makes it the login shell;
-- applies the terminal dotfiles;
-- installs TPM and the tmux plugins declared by `.tmux.conf`.
+- installs TPM and the configured tmux plugins;
+- installs Nix in daemon mode when it is missing;
+- enables `nix-command` and Flakes through the user Nix configuration;
+- applies the terminal dotfiles.
 
-## Included configuration
+Nix installation is intentionally separate from the terminal package list: the terminal tools remain native to the distribution where possible, while Nix provides reproducible development environments.
+
+## Nix environments
+
+The portable Flake lives at:
+
+```text
+~/.config/ank/nix/flake.nix
+```
+
+Use it with:
+
+```bash
+cd ~/.config/ank/nix
+nix develop
+nix develop .#recon
+nix develop .#web
+nix develop .#osint
+```
+
+These are temporary development shells. Packages disappear from the shell when you exit the environment; they are not installed globally by the Flake.
+
+## Included terminal configuration
 
 - Zsh + Starship
 - Bash fallback configuration
@@ -57,12 +71,8 @@ chezmoi diff
 chezmoi update
 ```
 
-`chezmoi apply` is intentionally quiet after the initial setup. Package provisioning runs again when the provisioning definition changes.
+`chezmoi apply` is idempotent. Package provisioning runs only when its chezmoi provisioning definition changes, and Nix installation runs only when Nix is missing.
 
 ## Scope
 
-This repository currently covers the terminal only. Desktop configuration, Niri, Noctalia, Nix/Flakes, pentesting environments, services, and other system configuration are intentionally kept separate for now.
-
-## Repository rule
-
-The files that define the terminal experience are kept as normal chezmoi source files. Setup logic is implemented through chezmoi's `run_onchange_` / `run_once_` scripts so a fresh machine needs no second bootstrap command.
+Current scope is the terminal and reproducible Nix development environments. Desktop configuration, Niri, Noctalia, and other system configuration will be added separately later.
