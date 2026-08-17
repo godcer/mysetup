@@ -22,21 +22,21 @@ esac
 
 install_native() {
   case "$FAMILY:$1" in
-    fedora:git) echo git;; fedora:curl) echo curl;; fedora:wget) echo wget;; fedora:unzip) echo unzip;;
+    fedora:git) echo git;; fedora:curl) echo curl;; fedora:wget) echo wget;; fedora:unzip) echo unzip;; fedora:awk) echo gawk;;
     fedora:zsh) echo zsh;; fedora:zsh-autosuggestions) echo zsh-autosuggestions;; fedora:zsh-syntax-highlighting) echo zsh-syntax-highlighting;;
-    fedora:starship) echo starship;; fedora:tmux) echo tmux;; fedora:neovim) echo neovim;; fedora:fzf) echo fzf;; fedora:fd) echo fd-find;;
+    fedora:starship) echo starship;; fedora:tmux) echo tmux;; fedora:neovim) echo neovim;; fedora:helix) echo helix;; fedora:fzf) echo fzf;; fedora:fd) echo fd-find;;
     fedora:ripgrep) echo ripgrep;; fedora:zoxide) echo zoxide;; fedora:bat) echo bat;; fedora:eza) echo eza;; fedora:yazi) echo yazi;;
     fedora:btop) echo btop;; fedora:jq) echo jq;; fedora:lazygit) echo lazygit;; fedora:gh) echo gh;; fedora:atuin) echo atuin;;
     fedora:just) echo just;; fedora:fastfetch) echo fastfetch;;
-    arch:git) echo git;; arch:curl) echo curl;; arch:wget) echo wget;; arch:unzip) echo unzip;;
+    arch:git) echo git;; arch:curl) echo curl;; arch:wget) echo wget;; arch:unzip) echo unzip;; arch:awk) echo gawk;;
     arch:zsh) echo zsh;; arch:zsh-autosuggestions) echo zsh-autosuggestions;; arch:zsh-syntax-highlighting) echo zsh-syntax-highlighting;;
-    arch:starship) echo starship;; arch:tmux) echo tmux;; arch:neovim) echo neovim;; arch:fzf) echo fzf;; arch:fd) echo fd;;
+    arch:starship) echo starship;; arch:tmux) echo tmux;; arch:neovim) echo neovim;; arch:helix) echo helix;; arch:fzf) echo fzf;; arch:fd) echo fd;;
     arch:ripgrep) echo ripgrep;; arch:zoxide) echo zoxide;; arch:bat) echo bat;; arch:eza) echo eza;; arch:yazi) echo yazi;;
     arch:btop) echo btop;; arch:jq) echo jq;; arch:lazygit) echo lazygit;; arch:gh) echo github-cli;; arch:atuin) echo atuin;;
     arch:just) echo just;; arch:fastfetch) echo fastfetch;;
-    debian:git) echo git;; debian:curl) echo curl;; debian:wget) echo wget;; debian:unzip) echo unzip;;
+    debian:git) echo git;; debian:curl) echo curl;; debian:wget) echo wget;; debian:unzip) echo unzip;; debian:awk) echo gawk;;
     debian:zsh) echo zsh;; debian:zsh-autosuggestions) echo zsh-autosuggestions;; debian:zsh-syntax-highlighting) echo zsh-syntax-highlighting;;
-    debian:tmux) echo tmux;; debian:neovim) echo neovim;; debian:fzf) echo fzf;; debian:fd) echo fd-find;; debian:ripgrep) echo ripgrep;;
+    debian:tmux) echo tmux;; debian:neovim) echo neovim;; debian:helix) echo helix;; debian:fzf) echo fzf;; debian:fd) echo fd-find;; debian:ripgrep) echo ripgrep;;
     debian:zoxide) echo zoxide;; debian:bat) echo bat;; debian:eza) echo eza;; debian:yazi) echo yazi;; debian:btop) echo btop;; debian:jq) echo jq;;
     debian:lazygit) echo lazygit;; debian:gh) echo gh;; debian:atuin) echo atuin;; debian:just) echo just;; debian:starship) echo starship;;
     debian:fastfetch) echo fastfetch;; *) echo "";;
@@ -115,7 +115,7 @@ if [ "$PM" = "apt" ]; then $SUDO apt-get update -qq; fi
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$HOME/.atuin/bin:$PATH"
 
-TOOLS="git curl wget unzip zsh zsh-autosuggestions zsh-syntax-highlighting starship tmux neovim fzf fd ripgrep zoxide bat eza yazi btop jq lazygit gh atuin just fastfetch"
+TOOLS="git curl wget unzip awk zsh zsh-autosuggestions zsh-syntax-highlighting starship tmux neovim helix fzf fd ripgrep zoxide bat eza yazi btop jq lazygit gh atuin just fastfetch"
 for tool in $TOOLS; do need_pkg "$tool" || true; done
 
 # Official installers / upstream release binaries for packages unavailable in a distro repository.
@@ -158,7 +158,7 @@ if [ "$LOGIN_SHELL" != "$ZSH" ]; then
 fi
 
 export PATH="$HOME/.local/bin:$HOME/.atuin/bin:$PATH"
-REQUIRED="zsh starship tmux nvim fzf fd rg bat eza yazi zoxide atuin fastfetch git jq"
+REQUIRED="zsh starship tmux nvim fzf fd rg bat eza yazi zoxide atuin fastfetch git jq awk"
 missing=""
 for cmd in $REQUIRED; do
   command -v "$cmd" >/dev/null 2>&1 || missing="$missing $cmd"
