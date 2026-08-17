@@ -1,0 +1,11 @@
+# Local edits that should never be committed
+*.local
+.chezmoi.*.local
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor/backup files
+*~
+*.swp

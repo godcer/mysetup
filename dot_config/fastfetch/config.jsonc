@@ -1,0 +1,64 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    "type": "chafa",
+    "width": 26,
+    "height": 14
+  },
+
+  "display": {
+    "separator": " → "
+  },
+
+  "modules": [
+
+    {
+      "type": "custom",
+      "format": "\u001b[33mSoftware\u001b[0m"
+    },
+
+    { "type": "os", "key": "   OS" },
+    { "type": "kernel", "key": "   Kernel" },
+    { "type": "uptime", "key": "   Uptime" },
+    { "type": "shell", "key": "   Shell" },
+    { "type": "wm", "key": "   WM" },
+
+    { "type": "custom", "format": "" },
+
+    {
+      "type": "custom",
+      "format": "\u001b[33mHardware\u001b[0m"
+    },
+
+    { "type": "host", "key": "  󰌢 PC" },
+    { "type": "display", "key": "  󰍹 Screen" },
+    { "type": "cpu", "key": "   CPU" },
+    { "type": "memory", "key": "   RAM" },
+    { "type": "battery", "key": "   Battery" },
+
+    {
+     "type":"custom",
+     "format": "\u001b[33mNetwork\u001b[0m"
+    },
+    {
+  "type": "localip",
+  "key": "   Local IP",
+  "format": "{1} ({4})"
+},
+{
+  "type": "command",
+  "key": "   Gateway",
+  "text": "ip route | grep default | awk '{print $3}'"
+},
+{
+  "type": "publicip",
+  "key": "  🌐 Public IP"
+},
+{
+  "type": "netio",
+  "key": "󰕒 Network",
+  "interval": 1000
+}
+ ]
+} 
