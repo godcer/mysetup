@@ -1,13 +1,13 @@
 # Git configuration managed by chezmoi.
 # Identity is local machine data and is never stored in this repository.
 
-{{- if or .git_user_name .git_user_email }}
-[user]
+{{- if hasKey . "git_user_name" }}
 {{- if .git_user_name }}
+[user]
 	name = {{ .git_user_name | quote }}
-{{- end }}
 {{- if .git_user_email }}
 	email = {{ .git_user_email | quote }}
+{{- end }}
 {{- end }}
 {{- end }}
 
