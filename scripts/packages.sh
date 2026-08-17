@@ -40,6 +40,7 @@ pkg_native () {
     debian:tldr)                           echo tealdeer ;;
     arch:tldr)                             echo tldr ;;
     fedora:starship|arch:starship|debian:starship) echo starship ;;
+    fedora:just|arch:just|debian:just)     echo just ;;
     arch:lazygit)                          echo lazygit ;;
     fedora:gh|arch:gh)                     echo gh ;;
     arch:procs)                            echo procs ;;
@@ -102,6 +103,7 @@ bin_spec () {
     gh)        echo "cli/cli|gh_<VER>_linux_amd64.tar.gz|gh_<VER>_linux_arm64.tar.gz|gh" ;;
     lazygit)   echo "jesseduffield/lazygit|lazygit_<VER>_Linux_x86_64.tar.gz|lazygit_<VER>_Linux_arm64.tar.gz|lazygit" ;;
     fastfetch) echo "fastfetch-cli/fastfetch|fastfetch-linux-x86_64.tar.gz|fastfetch-linux-aarch64.tar.gz|fastfetch" ;;
+    just)      echo "casey/just|just-x86_64-unknown-linux-musl.tar.gz|just-aarch64-unknown-linux-musl.tar.gz|just" ;;
     tldr)      echo "tealdeer-rs/tealdeer|tealdeer-<VER>-x86_64-unknown-linux-gnu.tar.gz|tealdeer-<VER>-aarch64-unknown-linux-gnu.tar.gz|tldr" ;;
     *)         echo "" ;;
   esac

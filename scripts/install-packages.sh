@@ -11,6 +11,7 @@ set -u
 # The core set we install (terminal-only, per project scope).
 TOOLS=(
   git curl wget unzip
+  just
   zsh zsh-autosuggestions zsh-syntax-highlighting
   starship tmux neovim
   fzf fd ripgrep zoxide
