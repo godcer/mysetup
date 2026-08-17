@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -eu
+
+if command -v nix >/dev/null 2>&1; then
+  echo "Nix already installed."
+else
+  echo "Installing Nix (multi-user daemon)..."
+  curl -L https://nixos.org/nix/install | sh -s -- --daemon
+fi
+
+# Make flakes and the modern Nix CLI available without requiring a manual step.
+mkdir -p "$HOME/.config/nix"
+NIX_CONF="$HOME/.config/nix/nix.conf"
+if [ -f "$NIX_CONF" ]; then
+  grep -qxF 'experimental-features = nix-command flakes' "$NIX_CONF" || \
+    printf '%s\n' 'experimental-features = nix-command flakes' >> "$NIX_CONF"
+else
+  printf '%s\n' 'experimental-features = nix-command flakes' > "$NIX_CONF"
+fi
+
+echo "Nix + flakes are ready."
+echo "Try:"
+echo "  cd ~/.config/ank/nix"
+echo "  nix develop .#recon"
