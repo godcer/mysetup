@@ -1,16 +1,6 @@
-{{- $osFamily := "linux" -}}
-{{- $apm := "unknown" -}}
-{{- $rel := .chezmoi.osRelease | default (dict) -}}
-{{- $id := index $rel "id" | default "" -}}
-{{- $idLike := index $rel "id_like" | default "" -}}
-{{- $haystack := printf "%s %s" $id $idLike -}}
-{{- if regexMatch "fedora|redhat|rhel|centos" $haystack -}}{{- $osFamily = "fedora" -}}{{- $apm = "dnf" -}}{{- end -}}
-{{- if regexMatch "arch|manjaro|endeavouros" $haystack -}}{{- $osFamily = "arch" -}}{{- $apm = "pacman" -}}{{- end -}}
-{{- if regexMatch "debian|ubuntu|kali" $haystack -}}{{- $osFamily = "debian" -}}{{- $apm = "apt" -}}{{- end -}}
+{{- $gitName := promptStringOnce . "git_user_name" "Git name (optional)" -}}
+{{- $gitEmail := promptStringOnce . "git_user_email" "Git email (optional)" -}}
 
 [data]
-  os_family = "{{ $osFamily }}"
-  package_manager = "{{ $apm }}"
-  os_release_id = "{{ $id }}"
-  architecture = "{{ .chezmoi.arch }}"
-  hostname = "{{ .chezmoi.hostname }}"
+  git_user_name = {{ $gitName | quote }}
+  git_user_email = {{ $gitEmail | quote }}
