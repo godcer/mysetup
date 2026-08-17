@@ -1,0 +1,77 @@
+"$schema" = "https://starship.rs/config-schema.json"
+
+add_newline = false
+
+# ------------------------------
+# LEFT SIDE (Minimal)
+# ------------------------------
+
+format ="""
+$directory
+$character
+"""
+
+# ------------------------------
+# RIGHT SIDE (Info Panel)
+# ------------------------------
+
+right_format = """
+$git_branch\
+$git_status\
+$python\
+$rust\
+$golang\
+$nodejs\
+$docker_context\
+$cmd_duration
+"""
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold cyan"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "red"
+format = "[$all_status$ahead_behind]($style) "
+
+[python]
+symbol = " "
+style = "bold yellow"
+format = "[$symbol$virtualenv]($style) "
+detect_extensions = ["py"]
+detect_files = ["requirements.txt", "pyproject.toml"]
+detect_folders = [".venv", "venv"]
+
+[rust]
+symbol = "🦀 "
+style = "bold red"
+format = "[$symbol$version]($style) "
+
+[golang]
+symbol = "🐹 "
+style = "bold cyan"
+format = "[$symbol$version]($style) "
+
+[nodejs]
+symbol = "⬢ "
+style = "bold green"
+format = "[$symbol$version]($style) "
+
+[docker_context]
+symbol = "🐳 "
+style = "bold blue"
+format = "[$symbol$context]($style) "
+
+[cmd_duration]
+min_time = 800
+format = "[󱎫 $duration]($style) "
+style = "dimmed white"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
