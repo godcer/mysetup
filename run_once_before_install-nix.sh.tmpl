@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -eu
+
+# Install Nix once. The user-level nix.conf managed by chezmoi enables
+# flakes + the modern nix CLI on every supported Linux machine.
+
+if command -v nix >/dev/null 2>&1; then
+  echo "Nix is already installed."
+  exit 0
+fi
+
+case "$(uname -s)" in
+  Linux) ;;
+  *)
+    echo "Nix bootstrap: unsupported OS $(uname -s); skipping."
+    exit 0
+    ;;
+esac
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "Nix bootstrap requires curl." >&2
+  exit 1
+fi
+
+echo "Installing Nix (daemon mode)..."
+curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
+
+# Make Nix available to the remainder of this chezmoi run when the installer
+# has installed the standard daemon profile.
+for profile in \
+  /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh \
+  /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+ do
+  if [ -r "$profile" ]; then
+    # shellcheck disable=SC1090
+    . "$profile"
+    break
+  fi
+done
+
+if ! command -v nix >/dev/null 2>&1; then
+  echo "Nix was installed, but the current shell cannot see it yet." >&2
+  echo "Open a new shell and run: nix --version" >&2
+  exit 0
+fi
+
+echo "Nix $(nix --version) installed."
