@@ -42,23 +42,23 @@
      "format": "\u001b[33mNetwork\u001b[0m"
     },
     {
-  "type": "localip",
-  "key": "   Local IP",
-  "format": "{1} ({4})"
-},
-{
-  "type": "command",
-  "key": "   Gateway",
-  "text": "ip route | grep default | awk '{print $3}'"
-},
-{
-  "type": "publicip",
-  "key": "  🌐 Public IP"
-},
-{
-  "type": "netio",
-  "key": "󰕒 Network",
-  "interval": 1000
+      "type": "localip",
+      "key": "   Local IP",
+      "format": "{1} ({4})"
+    },
+    {
+      "type": "command",
+      "key": "   Gateway",
+      "text": "ip route | grep default | awk '{print $3}'"
+    },
+    {
+      "type": "publicip",
+      "key": "  🌐 Public IP"
+    },
+    {
+      "type": "netio",
+      "key": "󰕒 Network",
+      "interval": 1000
+    }
+  ]
 }
- ]
-} 
