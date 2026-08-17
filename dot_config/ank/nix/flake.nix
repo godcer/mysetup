@@ -1,18 +1,16 @@
 {
-  description = "Ank's portable development environments";
+  description = "Portable development environments";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs }:
+  outputs = { nixpkgs, ... }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
-      forAllSystems = nixpkgs.lib.genAttrs systems;
+      forEachSystem = nixpkgs.lib.genAttrs systems;
     in {
-      devShells = forAllSystems (system:
+      devShells = forEachSystem (system:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = nixpkgs.legacyPackages.${system};
 
           common = with pkgs; [
             curl
@@ -23,54 +21,49 @@
             fzf
           ];
 
-          recon = with pkgs; [
-            amass
-            dnsx
-            httpx
-            subfinder
-            waybackurls
-          ];
-
-          web = with pkgs; [
-            curlie
-            httpie
-            jq
-            ripgrep
-          ];
-
-          osint = with pkgs; [
-            exiftool
-            jq
-            ripgrep
-            wget
-          ];
+          mkEnv = { name, packages, message }:
+            pkgs.mkShell {
+              packages = common ++ packages;
+              shellHook = ''
+                printf '\n\033[1;36m%s\033[0m\n' "${message}"
+                printf 'Packages are temporary and available only in this shell.\n\n'
+              '';
+            };
         in {
-          default = pkgs.mkShell {
-            packages = common;
+          default = mkEnv {
+            name = "default";
+            packages = [];
+            message = "Ank development environment";
           };
 
-          recon = pkgs.mkShell {
-            packages = common ++ recon;
-            shellHook = ''
-              echo "Recon environment ready."
-              echo "Temporary: packages exist only in this shell."
-            '';
+          recon = mkEnv {
+            name = "recon";
+            packages = with pkgs; [
+              amass
+              dnsx
+              httpx
+              subfinder
+              waybackurls
+            ];
+            message = "Recon environment ready";
           };
 
-          web = pkgs.mkShell {
-            packages = common ++ web;
-            shellHook = ''
-              echo "Web environment ready."
-              echo "Temporary: packages exist only in this shell."
-            '';
+          web = mkEnv {
+            name = "web";
+            packages = with pkgs; [
+              curlie
+              httpie
+            ];
+            message = "Web environment ready";
           };
 
-          osint = pkgs.mkShell {
-            packages = common ++ osint;
-            shellHook = ''
-              echo "OSINT environment ready."
-              echo "Temporary: packages exist only in this shell."
-            '';
+          osint = mkEnv {
+            name = "osint";
+            packages = with pkgs; [
+              exiftool
+              wget
+            ];
+            message = "OSINT environment ready";
           };
         });
     };
