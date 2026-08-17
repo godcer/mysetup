@@ -1,22 +1,19 @@
 # ==================================================
-# 1️⃣ ENVIRONMENT + PATH
+# PATH / ENVIRONMENT
 # ==================================================
 
 export EDITOR="nvim"
 export VISUAL="nvim"
+export PATH="$HOME/.local/bin:$HOME/.atuin/bin:$PATH"
 
-# User bins first
-export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
-# opencode
-export PATH=/home/munni/.opencode/bin:$PATH
-# GO path
-export GOROOT=/usr/lib/go-1.26
-export GOPATH=$HOME/go
-export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
-# ==================================================
-# 2️⃣ ZSH OPTIONS
-# ==================================================
+# Load Nix for every interactive zsh session when installed.
+if [[ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+  source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+fi
 
+# ==================================================
+# ZSH OPTIONS
+# ==================================================
 setopt autocd
 setopt interactivecomments
 setopt magicequalsubst
@@ -24,56 +21,45 @@ setopt nonomatch
 setopt notify
 setopt numericglobsort
 setopt promptsubst
-# Don't let Ctrl+D (EOF) kill the shell / tmux pane — type 'exit' to leave
 setopt ignoreeof
 
 WORDCHARS='_-' 
 PROMPT_EOL_MARK=""
 
 # ==================================================
-# 3️⃣ HISTORY
+# HISTORY
 # ==================================================
-
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=20000
-
 setopt hist_expire_dups_first
 setopt hist_ignore_dups
 setopt hist_ignore_space
 setopt hist_verify
-
 alias history="history 0"
 
 # ==================================================
-# 4️⃣ COMPLETION SYSTEM (Faster)
+# COMPLETION
 # ==================================================
-
 fpath=(~/.zsh/completions $fpath)
 autoload -Uz compinit
 compinit -C -d ~/.cache/zcompdump
-
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' rehash true
 
 # ==================================================
-# 5️⃣ MODERN CLI ALIASES
+# MODERN CLI ALIASES
 # ==================================================
-
-# eza replaces ls
 alias ls='eza --icons --group-directories-first'
 alias ll='eza -lh --icons'
 alias la='eza -a --icons'
 alias tree='eza --tree --icons'
-
-# modern tools
 alias cat='bat'
 alias grep='rg --color=auto'
 alias find='fd'
 alias cd='z'
 alias ff='fastfetch'
-# Git workflow
 alias g='git'
 alias gs='git status'
 alias ga='git add .'
@@ -89,24 +75,22 @@ alias du='dust'
 alias df='duf'
 alias ps='procs'
 alias lzd='lazydocker'
-
-#AI AGENT MODEL
 alias cl='claude'
 alias oc='opencode'
-###Android lab alias 
 alias adb-lab="adb -s emulator-5554"
 
-
 # ==================================================
-# AUTOSUGGESTIONS
+# ZSH PLUGINS
 # ==================================================
-
 if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
   source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 fi
+if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
 
 # ==================================================
-# YAZI (file manager — cd into wherever you exit)
+# YAZI
 # ==================================================
 if command -v yazi >/dev/null 2>&1; then
   function yazi-widget() {
@@ -119,22 +103,15 @@ if command -v yazi >/dev/null 2>&1; then
   bindkey '^O' yazi-widget
 fi
 
-
-
 # ==================================================
-# 6️⃣ FZF CONFIG
+# FZF
 # ==================================================
-
-# Load default keybindings + completion
 if command -v fzf >/dev/null 2>&1; then
   if command -v fd >/dev/null 2>&1; then
     export FZF_DEFAULT_COMMAND="fd --type f --hidden --exclude .git"
     export FZF_ALT_C_COMMAND="fd --type d --hidden --exclude .git"
   fi
-  # Use plain fzf (inline overlay) instead of fzf-tmux, which is broken
-  # in this tmux build (fzf-tmux hangs / exits 2 without creating a pane).
   export FZF_TMUX=0
-  # Pretty previews for file/dir pickers
   if command -v bat >/dev/null 2>&1; then
     export FZF_CTRL_T_OPTS="--height 60% --border --layout=reverse --preview 'if [ -d {} ]; then eza --tree --color=always --level=2 {}; else bat --color=always --style=numbers --line-range=:200 {}; fi' --preview-window right:60% --bind double-click:accept"
   fi
@@ -145,72 +122,24 @@ if command -v fzf >/dev/null 2>&1; then
 fi
 
 # ==================================================
-# 7️⃣ ZOXIDE (Smart cd)
+# ZOXIDE / STARSHIP / ATUIN / TV
 # ==================================================
-
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init zsh)"
-fi
-
-# ==================================================
-# 8️⃣ GIT PROMPT (Starship)
-# ==================================================
-
+if command -v zoxide >/dev/null 2>&1; then eval "$(zoxide init zsh)"; fi
 eval "$(starship init zsh)"
+if command -v atuin >/dev/null 2>&1; then eval "$(atuin init zsh)"; fi
+if command -v tv >/dev/null 2>&1; then eval "$(tv init zsh)"; fi
+if (( $+widgets[fzf-file-widget] )); then bindkey '^T' fzf-file-widget; fi
 
 # ==================================================
-# 9️⃣ AUTOSUGGESTIONS / SYNTAX HIGHLIGHTING
+# FASTFETCH
 # ==================================================
-
-if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
-  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-fi
+if [[ $SHLVL -eq 1 && -z "$TMUX" ]]; then fastfetch; fi
 
 # ==================================================
-# 🔟 ATUIN (Shell history)
+# TMUX SESSION RESUME
 # ==================================================
-
-if command -v atuin >/dev/null 2>&1; then
-  eval "$(atuin init zsh)"
-fi
-
-# ==================================================
-# 1️⃣1️⃣ FZF: keybindings + completion
-# ==================================================
-
-# fzf's zsh integration is loaded in section 6
-
-# ==================================================
-# 1️⃣2️⃣ FASTFETCH (Only Fresh Terminal)
-# ==================================================
-
-if [[ $SHLVL -eq 1 && -z "$TMUX" ]]; then
- fastfetch
-fi
-
-if command -v tv >/dev/null 2>&1; then
-  eval "$(tv init zsh)"
-fi
-
-# tv's init steals ^T (and ^R). Restore fzf's Ctrl+T file picker.
-if (( $+widgets[fzf-file-widget] )); then
-  bindkey '^T' fzf-file-widget
-fi
-
-# ==================================================
-# TMUX: attach to your last session
-#   t (bare)     -> attach to most recent session (resume)
-#   t <name>     -> attach to <name> or create it here
-#   t <dir>      -> cd into <dir>, session named after it
-#   (inside tmux) t <name> -> jump to / create that session
-#   bare `tmux`  -> same as `t` (attach to last)
-# No sessions?  Restores your last saved layout (resurrect)
-# before creating anything new, so a restart never loses work.
-# ==================================================
-
 function tmm() {
   local name="$1"
-
   if [[ -n "$TMUX" ]]; then
     if [[ -n "$name" ]]; then
       if [[ -d "$name" ]]; then cd "$name"; name=$(basename "$name"); fi
@@ -229,34 +158,22 @@ function tmm() {
   fi
 
   local latest
-  latest=$(tmux list-sessions -F '#{session_activity} #{session_name}' 2>/dev/null \
-           | sort -nr | head -1 | awk '{print $2}')
+  latest=$(tmux list-sessions -F '#{session_activity} #{session_name}' 2>/dev/null | sort -nr | head -1 | awk '{print $2}')
   if [[ -n "$latest" ]]; then
     tmux attach-session -t "$latest"
     return
   fi
 
-  # No sessions at all: start a server and restore the last saved layout
   if [[ -x "$HOME/.tmux/plugins/tmux-resurrect/scripts/restore.sh" && -e "$HOME/.local/share/tmux/resurrect/last" ]]; then
     tmux start-server 2>/dev/null
     "$HOME/.tmux/plugins/tmux-resurrect/scripts/restore.sh" >/dev/null 2>&1
-    latest=$(tmux list-sessions -F '#{session_activity} #{session_name}' 2>/dev/null \
-             | sort -nr | head -1 | awk '{print $2}')
-    if [[ -n "$latest" ]]; then
-      tmux attach-session -t "$latest"
-      return
-    fi
+    latest=$(tmux list-sessions -F '#{session_activity} #{session_name}' 2>/dev/null | sort -nr | head -1 | awk '{print $2}')
+    if [[ -n "$latest" ]]; then tmux attach-session -t "$latest"; return; fi
   fi
-
   tmux new-session -s "$(basename "$PWD")"
 }
 alias t='tmm'
 
-# Bare `tmux` outside a session = attach to your last session
 function tmux() {
-  if [[ "$#" -eq 0 && -z "$TMUX" ]]; then
-    tmm
-  else
-    command tmux "$@"
-  fi
+  if [[ "$#" -eq 0 && -z "$TMUX" ]]; then tmm; else command tmux "$@"; fi
 }
