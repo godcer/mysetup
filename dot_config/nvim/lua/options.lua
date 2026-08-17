@@ -7,6 +7,3 @@ o.cursorlineopt ='both' -- to enable cursorline!
 o.number = true
 o.relativenumber = true
 o.clipboard = "unnamedplus" -- share system clipboard (tmux/terminal/nvim)
-
-
-
