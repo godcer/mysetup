@@ -7,10 +7,8 @@ if [ ! -d "$TPM/.git" ]; then
   git clone --depth=1 https://github.com/tmux-plugins/tpm "$TPM"
 fi
 
-# TPM expects a running tmux server when installing plugins.
-if ! tmux start-server 2>/dev/null; then
-  tmux new-session -d -s chezmoi-bootstrap 'sleep 1' 2>/dev/null || true
-fi
+# TPM reads the tmux configuration from a running server when installing plugins.
+tmux new-session -d -s chezmoi-bootstrap 'sleep 1' 2>/dev/null || true
 
 if [ -x "$TPM/bin/install_plugins" ]; then
   "$TPM/bin/install_plugins"
