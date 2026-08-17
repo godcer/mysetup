@@ -1,0 +1,65 @@
+# Theme
+# solarized dark
+# fleet_dark
+# Monokai
+# NightFox
+# gruvbox_draken
+# base16_default_dark
+# jellybeans
+# nord-night
+# rasmus
+
+theme = "base16_transparent"
+
+# General Helix's configuration
+[editor]
+line-number = "relative"
+cursorline = false
+color-modes = true
+auto-completion = true
+auto-format = true
+true-color = true
+
+# Cursor type
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+# Helix's statusline
+[editor.statusline]
+left = ["mode", "spacer", "version-control", "spinner"]
+center = ["file-base-name", "diagnostics"]
+right = ["workspace-diagnostics", "spacer", "file-encoding", "spacer", "position-percentage", "spacer", "position", "spacer"]
+separator = " "
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+
+# File explorer configuration
+[editor.file-picker]
+hidden = true
+parents = false
+
+[editor.whitespace]
+render = "none"
+
+[editor.indent-guides]
+render = true
+character = "⸽"
+skip-levels = 1
+
+# LSP Server configuration
+[editor.lsp]
+display-messages = true
+auto-signature-help = true
+display-signature-help-docs = true
+
+# Auto-pairs
+[editor.auto-pairs]
+'(' = ')'
+'{' = '}'
+'[' = ']'
+'"' = '"'
+'`' = '`'
+"'" = "'"
