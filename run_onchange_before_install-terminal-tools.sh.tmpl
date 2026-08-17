@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+set -eu
+
+OS_ID="$(. /etc/os-release && printf '%s' "${ID:-}")"
+ID_LIKE="$(. /etc/os-release && printf '%s' "${ID_LIKE:-}")"
+ARCH="$(uname -m)"
+case "$ARCH" in
+  x86_64|amd64) ARCH="x86_64" ;;
+  aarch64|arm64) ARCH="aarch64" ;;
+  *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
+esac
+
+if [ "$(id -u)" -eq 0 ]; then SUDO=""; else SUDO="sudo"; fi
+command -v sudo >/dev/null 2>&1 || [ -z "$SUDO" ] || { echo "sudo is required." >&2; exit 1; }
+
+case "$OS_ID $ID_LIKE" in
+  *fedora*|*rhel*|*centos*) FAMILY="fedora"; PM="dnf" ;;
+  *arch*|*manjaro*|*endeavouros*|*garuda*|*cachyos*) FAMILY="arch"; PM="pacman" ;;
+  *debian*|*ubuntu*|*kali*|*linuxmint*|*pop*) FAMILY="debian"; PM="apt" ;;
+  *) echo "Unsupported Linux distribution: $OS_ID (${ID_LIKE:-unknown})" >&2; exit 1 ;;
+esac
+
+install_native() {
+  case "$FAMILY:$1" in
+    fedora:git) echo git;; fedora:curl) echo curl;; fedora:wget) echo wget;; fedora:unzip) echo unzip;;
+    fedora:zsh) echo zsh;; fedora:zsh-autosuggestions) echo zsh-autosuggestions;; fedora:zsh-syntax-highlighting) echo zsh-syntax-highlighting;;
+    fedora:starship) echo starship;; fedora:tmux) echo tmux;; fedora:neovim) echo neovim;; fedora:fzf) echo fzf;; fedora:fd) echo fd-find;;
+    fedora:ripgrep) echo ripgrep;; fedora:zoxide) echo zoxide;; fedora:bat) echo bat;; fedora:eza) echo eza;; fedora:yazi) echo yazi;;
+    fedora:btop) echo btop;; fedora:jq) echo jq;; fedora:lazygit) echo lazygit;; fedora:gh) echo gh;; fedora:atuin) echo atuin;;
+    fedora:just) echo just;; fedora:fastfetch) echo fastfetch;;
+    arch:git) echo git;; arch:curl) echo curl;; arch:wget) echo wget;; arch:unzip) echo unzip;;
+    arch:zsh) echo zsh;; arch:zsh-autosuggestions) echo zsh-autosuggestions;; arch:zsh-syntax-highlighting) echo zsh-syntax-highlighting;;
+    arch:starship) echo starship;; arch:tmux) echo tmux;; arch:neovim) echo neovim;; arch:fzf) echo fzf;; arch:fd) echo fd;;
+    arch:ripgrep) echo ripgrep;; arch:zoxide) echo zoxide;; arch:bat) echo bat;; arch:eza) echo eza;; arch:yazi) echo yazi;;
+    arch:btop) echo btop;; arch:jq) echo jq;; arch:lazygit) echo lazygit;; arch:gh) echo github-cli;; arch:atuin) echo atuin;;
+    arch:just) echo just;; arch:fastfetch) echo fastfetch;;
+    debian:git) echo git;; debian:curl) echo curl;; debian:wget) echo wget;; debian:unzip) echo unzip;;
+    debian:zsh) echo zsh;; debian:zsh-autosuggestions) echo zsh-autosuggestions;; debian:zsh-syntax-highlighting) echo zsh-syntax-highlighting;;
+    debian:tmux) echo tmux;; debian:neovim) echo neovim;; debian:fzf) echo fzf;; debian:fd) echo fd-find;; debian:ripgrep) echo ripgrep;;
+    debian:zoxide) echo zoxide;; debian:bat) echo bat;; debian:eza) echo eza;; debian:yazi) echo yazi;; debian:btop) echo btop;; debian:jq) echo jq;;
+    debian:lazygit) echo lazygit;; debian:gh) echo gh;; debian:atuin) echo atuin;; debian:just) echo just;; debian:starship) echo starship;;
+    debian:fastfetch) echo fastfetch;; *) echo "";;
+  esac
+}
+
+pkg_available() {
+  case "$PM" in
+    apt) apt-cache show "$1" >/dev/null 2>&1 ;;
+    dnf) dnf list --available "$1" >/dev/null 2>&1 || rpm -q "$1" >/dev/null 2>&1 ;;
+    pacman) pacman -Si "$1" >/dev/null 2>&1 || pacman -Q "$1" >/dev/null 2>&1 ;;
+  esac
+}
+
+pkg_install() {
+  case "$PM" in
+    apt) $SUDO apt-get install -y "$1" ;;
+    dnf) $SUDO dnf install -y --setopt=install_weak_deps=False "$1" ;;
+    pacman) $SUDO pacman -S --needed --noconfirm "$1" ;;
+  esac
+}
+
+need_pkg() {
+  local tool="$1" pkg
+  command -v "$tool" >/dev/null 2>&1 && return 0
+  pkg="$(install_native "$tool")"
+  if [ -n "$pkg" ] && pkg_available "$pkg"; then
+    echo "Installing $tool ($pkg)"
+    pkg_install "$pkg"
+  fi
+}
+
+install_starship() {
+  command -v starship >/dev/null 2>&1 && return 0
+  curl -sS https://starship.rs/install.sh | sh -s -- -y -b "$HOME/.local/bin"
+}
+
+install_atuin() {
+  command -v atuin >/dev/null 2>&1 && return 0
+  curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --non-interactive
+  [ -x "$HOME/.atuin/bin/atuin" ] && ln -sf "$HOME/.atuin/bin/atuin" "$HOME/.local/bin/atuin"
+}
+
+install_just() {
+  command -v just >/dev/null 2>&1 && return 0
+  curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin"
+}
+
+install_release_binary() {
+  local repo="$1" regex="$2" binary="$3"
+  command -v "$binary" >/dev/null 2>&1 && return 0
+  local url tmp asset
+  url="$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" | jq -r --arg re "$regex" '.assets[] | select(.name | test($re)) | .browser_download_url' | head -n1)"
+  [ -n "$url" ] && [ "$url" != "null" ] || return 1
+  tmp="$(mktemp -d)"
+  curl -fsSL -o "$tmp/archive" "$url"
+  case "$url" in
+    *.zip) unzip -q "$tmp/archive" -d "$tmp/out" ;;
+    *.tar.gz|*.tgz) mkdir -p "$tmp/out"; tar -xzf "$tmp/archive" -C "$tmp/out" ;;
+    *.tar.xz) mkdir -p "$tmp/out"; tar -xJf "$tmp/archive" -C "$tmp/out" ;;
+    *.deb) $SUDO dpkg -i "$tmp/archive" || $SUDO apt-get -f install -y ; rm -rf "$tmp"; return 0 ;;
+    *.rpm) $SUDO rpm -Uvh --replacepkgs "$tmp/archive"; rm -rf "$tmp"; return 0 ;;
+    *) rm -rf "$tmp"; return 1 ;;
+  esac
+  asset="$(find "$tmp/out" -type f -name "$binary" -perm -u+x 2>/dev/null | head -n1)"
+  [ -n "$asset" ] || asset="$(find "$tmp/out" -type f -name "$binary" 2>/dev/null | head -n1)"
+  [ -n "$asset" ] || { rm -rf "$tmp"; return 1; }
+  mkdir -p "$HOME/.local/bin"
+  install -m 0755 "$asset" "$HOME/.local/bin/$binary"
+  rm -rf "$tmp"
+}
+
+$SUDO true
+if [ "$PM" = "apt" ]; then $SUDO apt-get update -qq; fi
+
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$HOME/.atuin/bin:$PATH"
+
+TOOLS="git curl wget unzip zsh zsh-autosuggestions zsh-syntax-highlighting starship tmux neovim fzf fd ripgrep zoxide bat eza yazi btop jq lazygit gh atuin just fastfetch"
+for tool in $TOOLS; do need_pkg "$tool" || true; done
+
+# Official installers / upstream release binaries for packages unavailable in a distro repository.
+install_starship || true
+install_atuin || true
+install_just || true
+
+case "$ARCH" in
+  x86_64) A="x86_64"; Z="x86_64" ;;
+  aarch64) A="aarch64"; Z="aarch64" ;;
+esac
+
+install_release_binary "sxyazi/yazi" "yazi-${Z}-unknown-linux-gnu\\.(zip|tar\\.gz)" yazi || true
+install_release_binary "eza-community/eza" "eza_${Z}-unknown-linux-gnu\\.tar\\.gz" eza || true
+install_release_binary "ajeetdsouza/zoxide" "zoxide-.*-${Z}-unknown-linux-musl\\.tar\\.gz" zoxide || true
+install_release_binary "sharkdp/bat" "bat-v.*-${Z}-unknown-linux-gnu\\.tar\\.gz" bat || true
+install_release_binary "jesseduffield/lazygit" "lazygit_.*_Linux_${Z}\\.tar\\.gz" lazygit || true
+install_release_binary "cli/cli" "gh_.*_linux_${A}\\.tar\\.gz" gh || true
+
+if [ "$FAMILY" = "debian" ] && ! command -v fastfetch >/dev/null 2>&1; then
+  install_release_binary "fastfetch-cli/fastfetch" "fastfetch-linux-${A}-polyfilled\\.deb" fastfetch || true
+fi
+
+# Debian uses different command names for two common tools.
+if ! command -v fd >/dev/null 2>&1 && command -v fdfind >/dev/null 2>&1; then
+  ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
+fi
+if ! command -v bat >/dev/null 2>&1 && command -v batcat >/dev/null 2>&1; then
+  ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi
+
+# Zsh must be the configured login shell.
+ZSH="$(command -v zsh)"
+if ! grep -qx "$ZSH" /etc/shells 2>/dev/null; then
+  printf '%s\n' "$ZSH" | $SUDO tee -a /etc/shells >/dev/null
+fi
+LOGIN_SHELL="$(getent passwd "$(id -un)" 2>/dev/null | cut -d: -f7 || true)"
+if [ "$LOGIN_SHELL" != "$ZSH" ]; then
+  $SUDO chsh -s "$ZSH" "$(id -un)"
+fi
+
+# Fail only if a command that the preserved configs require is still missing.
+export PATH="$HOME/.local/bin:$HOME/.atuin/bin:$PATH"
+REQUIRED="zsh starship tmux nvim fzf fd rg bat eza yazi zoxide atuin fastfetch git jq"
+missing=""
+for cmd in $REQUIRED; do
+  command -v "$cmd" >/dev/null 2>&1 || missing="$missing $cmd"
+done
+if [ -n "$missing" ]; then
+  echo "Setup could not install required terminal tools:$missing" >&2
+  exit 1
+fi
+
+echo "Terminal packages and Zsh are ready."
