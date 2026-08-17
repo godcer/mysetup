@@ -1,16 +1,15 @@
 # Git configuration managed by chezmoi.
-# Identity is intentionally left out of the repo; it is read from chezmoi
-# data (set via `chezmoi -D git_user_name=...` or env) so a public repo has
-# no personal info. If unset, git will ask you on first commit.
+# Identity is local machine data and is never stored in this repository.
 
-{{- $name  := default "" .git_user_name }}
-{{- $email := default "" .git_user_email }}
-{{- if (and (eq $name "") (env "GIT_USER_NAME")) }}{{ $name = env "GIT_USER_NAME" }}{{ end }}
-{{- if (and (eq $email "") (env "GIT_USER_EMAIL")) }}{{ $email = env "GIT_USER_EMAIL" }}{{ end }}
-
+{{- if or .git_user_name .git_user_email }}
 [user]
-	name = {{ $name | quote }}
-	email = {{ $email | quote }}
+{{- if .git_user_name }}
+	name = {{ .git_user_name | quote }}
+{{- end }}
+{{- if .git_user_email }}
+	email = {{ .git_user_email | quote }}
+{{- end }}
+{{- end }}
 
 [init]
 	defaultBranch = main
