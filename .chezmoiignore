@@ -1,2 +1,0 @@
-# Files here are never applied by chezmoi.
-# Machine-specific files (e.g. local secrets) can be ignored here.
