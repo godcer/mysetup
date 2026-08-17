@@ -5,8 +5,8 @@ OS_ID="$(. /etc/os-release && printf '%s' "${ID:-}")"
 ID_LIKE="$(. /etc/os-release && printf '%s' "${ID_LIKE:-}")"
 ARCH="$(uname -m)"
 case "$ARCH" in
-  x86_64|amd64) ARCH="x86_64" ;;
-  aarch64|arm64) ARCH="aarch64" ;;
+  x86_64|amd64) ARCH="x86_64"; GH_ARCH="amd64" ;;
+  aarch64|arm64) ARCH="aarch64"; GH_ARCH="arm64" ;;
   *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
 esac
 
@@ -124,8 +124,8 @@ install_atuin || true
 install_just || true
 
 case "$ARCH" in
-  x86_64) A="x86_64"; Z="x86_64" ;;
-  aarch64) A="aarch64"; Z="aarch64" ;;
+  x86_64) Z="x86_64" ;;
+  aarch64) Z="aarch64" ;;
 esac
 
 install_release_binary "sxyazi/yazi" "yazi-${Z}-unknown-linux-gnu\\.(zip|tar\\.gz)" yazi || true
@@ -133,10 +133,10 @@ install_release_binary "eza-community/eza" "eza_${Z}-unknown-linux-gnu\\.tar\\.g
 install_release_binary "ajeetdsouza/zoxide" "zoxide-.*-${Z}-unknown-linux-musl\\.tar\\.gz" zoxide || true
 install_release_binary "sharkdp/bat" "bat-v.*-${Z}-unknown-linux-gnu\\.tar\\.gz" bat || true
 install_release_binary "jesseduffield/lazygit" "lazygit_.*_Linux_${Z}\\.tar\\.gz" lazygit || true
-install_release_binary "cli/cli" "gh_.*_linux_${A}\\.tar\\.gz" gh || true
+install_release_binary "cli/cli" "gh_.*_linux_${GH_ARCH}\\.tar\\.gz" gh || true
 
 if [ "$FAMILY" = "debian" ] && ! command -v fastfetch >/dev/null 2>&1; then
-  install_release_binary "fastfetch-cli/fastfetch" "fastfetch-linux-${A}-polyfilled\\.deb" fastfetch || true
+  install_release_binary "fastfetch-cli/fastfetch" "fastfetch-linux-${GH_ARCH}-polyfilled\\.deb" fastfetch || true
 fi
 
 # Debian uses different command names for two common tools.
@@ -157,7 +157,6 @@ if [ "$LOGIN_SHELL" != "$ZSH" ]; then
   $SUDO chsh -s "$ZSH" "$(id -un)"
 fi
 
-# Fail only if a command that the preserved configs require is still missing.
 export PATH="$HOME/.local/bin:$HOME/.atuin/bin:$PATH"
 REQUIRED="zsh starship tmux nvim fzf fd rg bat eza yazi zoxide atuin fastfetch git jq"
 missing=""
