@@ -7,13 +7,12 @@ export VISUAL="nvim"
 
 # User bins first
 export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
-# opencode (~/.opencode/bin, if present)
-[ -d "$HOME/.opencode/bin" ] && export PATH="$HOME/.opencode/bin:$PATH"
-# GO path (GOROOT auto-detected via the go command when installed)
-GOROOT_BIN="$(command -v go >/dev/null 2>&1 && dirname "$(readlink -f "$(command -v go)")")"
-[ -n "$GOROOT_BIN" ] && export PATH="$GOROOT_BIN:$PATH"
+# opencode
+export PATH=/home/munni/.opencode/bin:$PATH
+# GO path
+export GOROOT=/usr/lib/go-1.26
 export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 # ==================================================
 # 2️⃣ ZSH OPTIONS
 # ==================================================
@@ -122,8 +121,6 @@ fi
 
 
 
-
-#
 # ==================================================
 # 6️⃣ FZF CONFIG
 # ==================================================
@@ -156,29 +153,32 @@ if command -v zoxide >/dev/null 2>&1; then
 fi
 
 # ==================================================
-# 8️⃣ ATUIN (History Search)
+# 8️⃣ GIT PROMPT (Starship)
 # ==================================================
 
-if command -v atuin >/dev/null 2>&1; then
-  eval "$(atuin init zsh)"
-  bindkey '^R' atuin-search
-fi
+eval "$(starship init zsh)"
 
 # ==================================================
-# 9️⃣ STARSHIP (Prompt)
-# ==================================================
-
-if command -v starship >/dev/null 2>&1; then
-  eval "$(starship init zsh)"
-fi
-
-# ==================================================
-# 1️⃣1️⃣ SYNTAX HIGHLIGHTING (MUST BE LAST)
+# 9️⃣ AUTOSUGGESTIONS / SYNTAX HIGHLIGHTING
 # ==================================================
 
 if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
   source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
+
+# ==================================================
+# 🔟 ATUIN (Shell history)
+# ==================================================
+
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh)"
+fi
+
+# ==================================================
+# 1️⃣1️⃣ FZF: keybindings + completion
+# ==================================================
+
+# fzf's zsh integration is loaded in section 6
 
 # ==================================================
 # 1️⃣2️⃣ FASTFETCH (Only Fresh Terminal)
@@ -203,7 +203,7 @@ fi
 #   t <name>     -> attach to <name> or create it here
 #   t <dir>      -> cd into <dir>, session named after it
 #   (inside tmux) t <name> -> jump to / create that session
-#   bare `tmux`  -> same as `t` (attach to last session)
+#   bare `tmux`  -> same as `t` (attach to last)
 # No sessions?  Restores your last saved layout (resurrect)
 # before creating anything new, so a restart never loses work.
 # ==================================================
